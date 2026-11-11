@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1a120b">
+<title>モンスターラッシュ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; height: 100%; background: #1a120b; overflow: hidden;
+               overscroll-behavior: none; -webkit-tap-highlight-color: transparent; }
+  body.touch { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  #c { width: 100vw; height: 100vh; height: 100dvh; display: block; outline: none; }
+
+  /* スマホ用操作（pad.js が body.touch を付けたときだけ表示） */
+  #pad { display: none; }
+  body.touch #pad { display: block; }
+  body.touch.pad-off #pad { display: none; }
+
+  /* 左側: ここをなぞるとスティックになる */
+  #zone { position: fixed; left: 0; bottom: 0; width: 55vw; height: 75vh; touch-action: none; }
+  #stick { position: fixed; width: 132px; height: 132px; margin: -66px 0 0 -66px; border-radius: 50%;
+           left: calc(110px + env(safe-area-inset-left)); top: calc(100% - 120px - env(safe-area-inset-bottom));
+           background: rgba(255, 240, 210, 0.10); border: 2px solid rgba(255, 240, 210, 0.45);
+           pointer-events: none; transition: opacity .15s; opacity: .7; }
+  #stick.on { opacity: 1; transition: none; }
+  #knob { position: absolute; left: 50%; top: 50%; width: 60px; height: 60px; margin: -30px 0 0 -30px;
+          border-radius: 50%; background: rgba(255, 240, 210, 0.55); border: 2px solid rgba(255, 255, 255, 0.8); }
+
+  /* 右下: 攻撃ボタン */
+  #atk { position: fixed; right: calc(26px + env(safe-area-inset-right)); bottom: calc(30px + env(safe-area-inset-bottom));
+         width: 112px; height: 112px; border-radius: 50%; margin: 0; padding: 0; touch-action: none;
+         background: rgba(255, 110, 80, 0.30); border: 3px solid rgba(255, 190, 160, 0.85); color: #fff;
+         font: 400 24px 'Dela Gothic One', system-ui, sans-serif; letter-spacing: .05em;
+         text-shadow: 0 2px 4px rgba(0,0,0,.6); }
+  #atk.on { background: rgba(255, 110, 80, 0.7); transform: scale(0.93); }
+
+  #l { position: fixed; inset: 0; display: flex; flex-direction: column; gap: 14px; align-items: center; justify-content: center;
+       font: 400 24px 'Dela Gothic One', system-ui, sans-serif; color: #ffd86a; letter-spacing: .06em; }
+  #l .bar { width: min(320px, 70vw); height: 10px; border-radius: 5px; background: rgba(255,255,255,.15); overflow: hidden; }
+  #l .bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #ff8a4a, #ffd86a); }
+</style>
+</head>
+<body class="pad-off">
+<canvas id="c" tabindex="-1"></canvas>
+<div id="l"><div>モンスターラッシュ</div><div class="bar"><i id="lb"></i></div><div id="lt" style="font-size:16px;color:#e8d8c0">読み込み中… 0%</div></div>
+<div id="pad" aria-hidden="true">
+  <div id="zone"></div>
+  <div id="stick"><div id="knob"></div></div>
+  <button id="atk">攻撃</button>
+</div>
+<script src="pad.js"></script>
+<script src="Build/WebGL.loader.js"></script>
+<script>
+  const c = document.getElementById('c'), l = document.getElementById('l');
+  createUnityInstance(c, {
+    dataUrl: 'Build/WebGL.data',
+    frameworkUrl: 'Build/WebGL.framework.js',
+    codeUrl: 'Build/WebGL.wasm',
+    streamingAssetsUrl: 'StreamingAssets',
+    companyName: 'MonsterRush', productName: 'MonsterRush', productVersion: '1.0',
+  }, p => {
+    document.getElementById('lb').style.width = Math.round(p * 100) + '%';
+    document.getElementById('lt').textContent = '読み込み中… ' + Math.round(p * 100) + '%';
+  })
+  .then(u => { window.unityInstance = u; l.remove(); c.focus(); window.MonsterRushPad.onUnityReady(); })
+  .catch(e => { document.getElementById('lt').textContent = String(e); });
+  c.addEventListener('pointerdown', () => c.focus());
+</script>
+</body>
+</html>
